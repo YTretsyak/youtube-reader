@@ -25,7 +25,7 @@ acceptance criteria are checked.
 - [x] .NET solution + projects created, dependencies pointing inward only
       (`Domain`, `Contracts`, `Application`, `Infrastructure`, `Api`,
       `TranscriptService`) — target framework **.NET 10**
-- [ ] Test projects scaffolded: `tests/Domain.Tests`, `tests/Application.Tests`,
+- [x] Test projects scaffolded: `tests/Domain.Tests`, `tests/Application.Tests`,
       `tests/Infrastructure.Tests`, `tests/TranscriptService.Tests` (xUnit) —
       **unit tests only for now**, no real Mongo/RabbitMQ/GitHub Models in the
       suite
@@ -35,7 +35,7 @@ acceptance criteria are checked.
       RabbitMQ `5672`/`15672`)
 
 **Acceptance:**
-- [ ] `dotnet build` + `dotnet test` run green (empty)
+- [x] `dotnet build` + `dotnet test` run green (empty)
 - [x] LLM smoke test returns a completion
 - [ ] Mongo and RabbitMQ reachable
 
