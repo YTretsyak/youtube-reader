@@ -108,4 +108,24 @@ public class TranscriptResultHandlerTests
         Assert.Equal(VideoStatus.Failed, updated!.Status);
         Assert.Equal("first failure reason", updated.Error);
     }
+
+    [Fact]
+    public async Task HandleReadyAsync_VideoAlreadySummarizing_RetriesSummarizationAndProcesses()
+    {
+        var (repository, video) = await SeedFetchingVideoAsync();
+        video.MarkSummarizing();
+        await repository.SaveAsync(video);
+
+        var summary = new Summary("summary text", "github-models", "openai/gpt-4o-mini");
+        var summarizer = new StubSummarizer(SummarizerResult.Success(summary));
+        var handler = new TranscriptResultHandler(repository, summarizer);
+        var message = new TranscriptReady(video.Id.Value, "Example video", "full transcript text");
+
+        await handler.HandleReadyAsync(message);
+
+        var updated = await repository.GetByVideoIdAsync(video.Id);
+        Assert.Equal(VideoStatus.Processed, updated!.Status);
+        Assert.Equal("Example video", updated.Title);
+        Assert.Same(summary, updated.Summary);
+    }
 }

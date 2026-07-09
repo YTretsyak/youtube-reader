@@ -20,8 +20,11 @@ public sealed class TranscriptResultHandler
         if (video is null || IsAlreadyFinal(video))
             return;
 
-        video.MarkSummarizing();
-        await _repository.SaveAsync(video, cancellationToken);
+        if (video.Status == VideoStatus.FetchingTranscript)
+        {
+            video.MarkSummarizing();
+            await _repository.SaveAsync(video, cancellationToken);
+        }
 
         var result = await _summarizer.SummarizeAsync(message.Transcript, cancellationToken);
 
