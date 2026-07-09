@@ -91,10 +91,10 @@ Mongo/RabbitMQ/GitHub Models in the suite (see `CLAUDE.md`). Real-service
 behaviors below are deferred until integration tests are reintroduced.
 
 ### 3a — `MongoSummaryRepository : ISummaryRepository`
-- [ ] Document mapping + client config (`mongodb-connection` skill)
-- [ ] Unique index on `videoId`
-- [ ] create / get-by-id / get-by-videoId / list-newest / status-update
-- [ ] Unit test mapping/query logic against a mocked driver (index enforcement
+- [x] Document mapping + client config (`mongodb-connection` skill)
+- [x] Unique index on `videoId`
+- [x] create / get-by-id / get-by-videoId / list-newest / status-update
+- [x] Unit test mapping/query logic against a mocked driver (index enforcement
       itself not covered — needs a real DB)
 
 ### 3b — `OpenAiCompatibleSummarizer : ISummarizer`
