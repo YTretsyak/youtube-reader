@@ -98,11 +98,11 @@ behaviors below are deferred until integration tests are reintroduced.
       itself not covered — needs a real DB)
 
 ### 3b — `OpenAiCompatibleSummarizer : ISummarizer`
-- [ ] `HttpClient`-based (`IHttpClientFactory`), config via
+- [x] `HttpClient`-based (`IHttpClientFactory`), config via
       `LLM_BASE_URL`/`LLM_API_KEY`/`LLM_MODEL`
-- [ ] POST `/chat/completions`, read `choices[0].message.content`
-- [ ] Provider failure / `429` → `failed` outcome, not a throw
-- [ ] Unit test against a mocked `HttpMessageHandler` (success/429/malformed)
+- [x] POST `/chat/completions`, read `choices[0].message.content`
+- [x] Provider failure / `429` → `failed` outcome, not a throw
+- [x] Unit test against a mocked `HttpMessageHandler` (success/429/malformed)
 
 ### 3c — RabbitMQ plumbing
 - [ ] `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher`
