@@ -69,7 +69,7 @@ acceptance criteria are checked.
       `TranscriptUnavailable`
 - [x] Boundary interfaces: `ITranscriptRequestPublisher`, `ISummarizer`,
       `ISummaryRepository`
-- [ ] `SummarizeVideo` (submit path) — dedupe, create-as-`new`, no re-publish
+- [x] `SummarizeVideo` (submit path) — dedupe, create-as-`new`, no re-publish
       in-flight, cached `processed`, re-queue `failed`
 - [ ] Transcript-result handler — `TranscriptReady` → `processed`,
       `TranscriptUnavailable` → `failed`, idempotent on redelivery
