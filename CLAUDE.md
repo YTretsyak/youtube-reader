@@ -31,7 +31,7 @@ previously summarized links instead of re-processing them.
 
 ## Architecture
 
-Follow **SOLID**, **Clean Architecture**, and **DDD**. Practically, that means for the .NET backend:
+Follow **SOLID**, **Clean Architecture**, and **DDD** , Common Patterns when needed. Practically, that means for the .NET backend:
 
 - `Domain` — core model for this app: `Video`, `Transcript`, `Summary` entities/value objects
   (e.g. a `VideoId`/`VideoUrl` value object that owns YouTube URL parsing/validation). No
