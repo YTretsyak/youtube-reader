@@ -10,7 +10,7 @@ acceptance criteria are checked.
 | --- | --- | --- |
 | P0 — Project setup & prerequisites | `feature/solution-scaffold` | [x] Complete |
 | P1 — Domain (M1) | `feature/domain-model` | [x] Complete |
-| P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [ ] Not started |
+| P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [x] Complete |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [ ] Not started |
 | P4 — Transcript service (M4) | `feature/transcript-service` | [ ] Not started |
 | P5 — API service (M5) | `feature/api-endpoints` | [ ] Not started |
@@ -73,10 +73,10 @@ acceptance criteria are checked.
       in-flight, cached `processed`, re-queue `failed`
 - [x] Transcript-result handler — `TranscriptReady` → `processed`,
       `TranscriptUnavailable` → `failed`, idempotent on redelivery
-- [ ] `GetSummaryHistory` — newest-first list
+- [x] `GetSummaryHistory` — newest-first list
 
 **Acceptance:**
-- [ ] Unit tests: cache-hit, in-flight-dedupe, re-queue-failed,
+- [x] Unit tests: cache-hit, in-flight-dedupe, re-queue-failed,
       transcript-ready→processed, transcript-unavailable→failed,
       duplicate-result idempotency — all against in-memory fakes
 
