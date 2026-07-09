@@ -65,9 +65,9 @@ acceptance criteria are checked.
 
 **Branch:** `feature/application-usecases`
 
-- [ ] `Contracts`: `TranscriptRequested`, `TranscriptReady`,
+- [x] `Contracts`: `TranscriptRequested`, `TranscriptReady`,
       `TranscriptUnavailable`
-- [ ] Boundary interfaces: `ITranscriptRequestPublisher`, `ISummarizer`,
+- [x] Boundary interfaces: `ITranscriptRequestPublisher`, `ISummarizer`,
       `ISummaryRepository`
 - [ ] `SummarizeVideo` (submit path) — dedupe, create-as-`new`, no re-publish
       in-flight, cached `processed`, re-queue `failed`
