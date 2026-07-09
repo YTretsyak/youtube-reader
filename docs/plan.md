@@ -99,7 +99,9 @@ reachable Mongo + RabbitMQ, so every later phase has somewhere to land.
    - Enforce the dependency rule: `Domain`/`Application` reference **no**
      YoutubeExplode, LLM SDK, MongoDB, or RabbitMQ client packages.
 2. Test projects: `tests/Domain.Tests`, `tests/Application.Tests`,
-   `tests/Infrastructure.Tests`, `tests/TranscriptService.Tests` (xUnit).
+   `tests/Infrastructure.Tests`, `tests/TranscriptService.Tests` (xUnit). All
+   unit tests for now — no real Mongo/RabbitMQ/GitHub Models in the suite
+   (see `CLAUDE.md`).
 3. **Host LLM model in GitHub (setup half):** create a GitHub fine-grained PAT
    with `Models: read-only` (spec §7); fill `LLM_API_KEY` in a git-ignored
    `.env`; smoke-test with the bash/PowerShell snippet in spec §7 before any
@@ -174,16 +176,20 @@ idempotency — all against in-memory fakes, no real I/O or broker.
 **Branch:** `feature/infrastructure-adapters` (adapters are independent; may split
 per adapter).
 
-**Goal:** implement the boundary interfaces against real services. Covers the
-**DB service**, the **LLM-in-GitHub** adapter, and the **RabbitMQ** plumbing the
-transcript service and api both build on.
+**Goal:** implement the boundary interfaces against real services, verified with
+**unit tests against mocks/fakes only** — no live Mongo/RabbitMQ/GitHub Models in
+the test suite for now (see `CLAUDE.md`). Covers the **DB service**, the
+**LLM-in-GitHub** adapter, and the **RabbitMQ** plumbing the transcript service
+and api both build on.
 
 ### 3a — DB service: `MongoSummaryRepository : ISummaryRepository`
 1. Map the §6 document; configure the client per the `mongodb-connection` skill.
 2. **Unique index on `videoId`** so concurrent submits can't create duplicates
    (FR5/FR8) — the DB enforces dedupe, not just app code.
 3. create / get-by-id / get-by-videoId / list-newest / status-update.
-4. Integration-test against the `mongo` compose service.
+4. Unit-test the mapping/query logic against a mocked driver; the unique-index
+   constraint itself is not verified by an automated test for now (Mongo can't
+   enforce it without a real database).
 
 ### 3b — LLM in GitHub: `OpenAiCompatibleSummarizer : ISummarizer`
 1. `HttpClient`-based (via `IHttpClientFactory`), configured only by
@@ -191,7 +197,8 @@ transcript service and api both build on.
 2. POST `/chat/completions`, `messages:[{system},{user}]`, read
    `choices[0].message.content` (spec §7).
 3. Map provider failure / `429` to a `failed` outcome, not a throw.
-4. Integration-test against real GitHub Models (PAT from P0).
+4. Unit-test against a mocked `HttpMessageHandler` (success, `429`, malformed
+   response) — no live call to GitHub Models in the test suite.
 
 ### 3c — RabbitMQ: `RabbitMqTranscriptRequestPublisher` + consumer plumbing
 1. `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher` — publishes
@@ -202,15 +209,17 @@ transcript service and api both build on.
    the result** (`consume → handle → publish → ack`), `BasicQos` prefetch = 1,
    retry cap + **dead-letter queue** for poison messages, `nack(requeue:false)`
    past the cap. Connection via `RABBITMQ_URI`.
-3. Integration-test publish→consume round-trip against the `rabbitmq` service,
-   including: an unacked message is redelivered after the consumer drops, and a
-   poison message dead-letters after the cap instead of looping.
+3. Unit-test the ack/nack/retry-cap decision logic in isolation (mocked channel).
+   Redelivery and dead-lettering are real-broker behaviors — not covered by an
+   automated test for now; verify manually via `docker compose up rabbitmq` if
+   needed before P4/P5 depend on this plumbing.
 
-**Acceptance:** each adapter's integration test passes against its real
-dependency; unique `videoId` index verified; LLM-`429` → `failed`; a message
-published on one connection is consumed on another; a consumer that dies before
-acking causes redelivery (no lost message); a poison message dead-letters after
-the retry cap instead of looping.
+**Acceptance:** each adapter's unit tests pass against mocks/fakes; LLM-`429` →
+`failed` (unit-tested); ack-after-publish and retry-cap decision logic
+unit-tested. Real-service behaviors (unique-index enforcement, cross-connection
+publish→consume, redelivery-on-crash, dead-lettering) are **not** covered by
+automated tests in this phase — deferred until integration tests are
+reintroduced.
 
 **Resolves open question:** "transcript persistence" — store **only the summary**
 on the document (spec §6). Whether `TranscriptReady` carries the full transcript
@@ -248,12 +257,14 @@ architecture change.
 7. `src/TranscriptService/Dockerfile`; **uncomment `transcript-service`** in
    `docker-compose.yml`.
 
-**Acceptance:** `docker compose up rabbitmq transcript-service` consumes a
-`TranscriptRequested` and publishes the correct result for both a captioned and a
-no-caption video; **killing a worker mid-fetch redelivers the request and the
-video still completes** (no lost message); `--scale transcript-service=3` spreads
-requests across replicas (competing consumers); a caption-less video acks (no
-loop); a poison message dead-letters after the cap.
+**Acceptance:** `YoutubeExplodeTranscriptFetcher` and the ack/publish sequencing
+are unit-tested against mocks (captioned, no-caption, transient-error cases). The
+following are **manual smoke checks** via `docker compose up rabbitmq
+transcript-service`, not automated tests, and can be done ad hoc rather than
+gating the merge: a `TranscriptRequested` produces the correct result for both a
+captioned and a no-caption video; killing a worker mid-fetch redelivers the
+request and the video still completes; `--scale transcript-service=3` spreads
+requests across replicas; a poison message dead-letters after the cap.
 
 ---
 

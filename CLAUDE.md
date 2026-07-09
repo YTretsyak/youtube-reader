@@ -67,8 +67,10 @@ so a worker that crashes mid-process leaves the message unacked and the broker r
 handlers are therefore idempotent, with retry-cap + dead-lettering for poison messages. See
 `docs/specification.md` for the adapter and messaging details.
 
-Mirror this layering under `tests/` per layer (unit tests for `Domain`/`Application`, integration
-tests for `Infrastructure` adapters and the `TranscriptService` worker).
+Mirror this layering under `tests/` per layer. **Unit tests only for now** — `Infrastructure`
+adapters and the `TranscriptService` worker are tested against mocks/fakes (e.g. a mocked
+`HttpMessageHandler`, an in-memory broker/repo double), not real Mongo/RabbitMQ/GitHub Models.
+Integration tests against real services are deferred; revisit once the adapters are stable.
 
 Frontend is a thin client against the backend's HTTP API — no business logic (summarization
 rules, transcript parsing) duplicated there.
