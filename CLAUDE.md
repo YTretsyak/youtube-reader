@@ -113,3 +113,8 @@ Branch naming: `feature/<short-description>`, `release/<version>`, `hotfix/<shor
 
 - No code comments explaining *what* code does — only *why*, when non-obvious.
 - Don't add abstractions/config beyond what's needed for the current use case.
+
+
+## Project status
+
+`docs/progress.md` file should show result of work, what have been done, currently in work, haven't started.
