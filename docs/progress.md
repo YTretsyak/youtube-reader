@@ -9,7 +9,7 @@ acceptance criteria are checked.
 | Phase | Branch | Status |
 | --- | --- | --- |
 | P0 — Project setup & prerequisites | `feature/solution-scaffold` | [x] Complete |
-| P1 — Domain (M1) | `feature/domain-model` | [ ] Not started |
+| P1 — Domain (M1) | `feature/domain-model` | [x] Complete |
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [ ] Not started |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [ ] Not started |
 | P4 — Transcript service (M4) | `feature/transcript-service` | [ ] Not started |
@@ -49,15 +49,15 @@ acceptance criteria are checked.
       `youtu.be/`, `shorts/`)
 - [x] `Transcript` — non-empty invariant
 - [x] `Summary` — LLM output + provider/model provenance
-- [ ] `Video` entity — status lifecycle transitions
+- [x] `Video` entity — status lifecycle transitions
       (`new → fetching-transcript → summarizing → processed | failed`,
       `failed → new` resubmit)
 
 **Acceptance:**
 - [x] Unit tests cover valid/invalid URLs across all forms
-- [ ] Empty-transcript rejection tested
-- [ ] Every legal/illegal status transition tested
-- [ ] No framework references in `Domain`
+- [x] Empty-transcript rejection tested
+- [x] Every legal/illegal status transition tested
+- [x] No framework references in `Domain`
 
 ---
 
