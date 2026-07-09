@@ -47,7 +47,7 @@ acceptance criteria are checked.
 
 - [x] `VideoUrl` / `VideoId` — YouTube URL parsing/validation (`watch?v=`,
       `youtu.be/`, `shorts/`)
-- [ ] `Transcript` — non-empty invariant
+- [x] `Transcript` — non-empty invariant
 - [ ] `Summary` — LLM output + provider/model provenance
 - [ ] `Video` entity — status lifecycle transitions
       (`new → fetching-transcript → summarizing → processed | failed`,
