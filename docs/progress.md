@@ -45,7 +45,7 @@ acceptance criteria are checked.
 
 **Branch:** `feature/domain-model`
 
-- [ ] `VideoUrl` / `VideoId` — YouTube URL parsing/validation (`watch?v=`,
+- [x] `VideoUrl` / `VideoId` — YouTube URL parsing/validation (`watch?v=`,
       `youtu.be/`, `shorts/`)
 - [ ] `Transcript` — non-empty invariant
 - [ ] `Summary` — LLM output + provider/model provenance
@@ -54,7 +54,7 @@ acceptance criteria are checked.
       `failed → new` resubmit)
 
 **Acceptance:**
-- [ ] Unit tests cover valid/invalid URLs across all forms
+- [x] Unit tests cover valid/invalid URLs across all forms
 - [ ] Empty-transcript rejection tested
 - [ ] Every legal/illegal status transition tested
 - [ ] No framework references in `Domain`
