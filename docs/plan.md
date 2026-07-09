@@ -313,38 +313,47 @@ lost message).
 
 **Goal:** the React (TypeScript) client — a **thin** client over the API, no
 duplicated business logic (spec §3), built with **Material UI (MUI)**. Completes
-`docker compose up`.
+`docker compose up`. Design:
+`docs/superpowers/specs/2026-07-09-video-detail-page-design.md`.
 
 **Tasks:**
 
-1. Scaffold `web/` (React + TypeScript) and add MUI:
+1. Scaffold `web/` (React + TypeScript) and add MUI + router:
    ```
-   npm install @mui/material @emotion/react @emotion/styled
+   npm install @mui/material @emotion/react @emotion/styled react-router-dom
    ```
    `@mui/material` is the component library; `@emotion/react` + `@emotion/styled`
-   are its default styling engine (peer deps). Wrap the app in a MUI
-   `ThemeProvider` + `CssBaseline`. Optional later: `@mui/icons-material` for
-   icons. MUI is presentation only — no business logic (spec §3).
-2. **Submit form** — MUI `TextField` (URL) + `Button`; `POST /api/summaries`; on
-   `202`, capture the `id` and start polling. Handle the `200` cache-hit path
-   (already `processed`) by rendering the summary immediately, no polling.
-3. **Progress view** — **poll** `GET /api/summaries/{id}` (~1.5 s) and map
-   `status` to a stage label: `new`→"Queued…", `fetching-transcript`→"Fetching
-   transcript…", `summarizing`→"Summarizing…". Render with a MUI
-   `LinearProgress`/`CircularProgress` (indeterminate — no percentage, spec §6).
-   Stop polling on `processed`/`failed`.
-4. **Summary view** — on `processed`, render summary + title in a MUI `Card`; on
-   `failed`, show `error` in an `Alert`.
-5. **History list** — `GET /api/summaries`, newest first, click-through, as a MUI
-   `List`/`Card` grid.
+   are its default styling engine (peer deps). `react-router-dom` backs the
+   `/` and `/video/:id` routes (task 3). Wrap the app in a MUI `ThemeProvider` +
+   `CssBaseline`. Optional later: `@mui/icons-material` for icons. MUI is
+   presentation only — no business logic (spec §3).
+2. **Main page (`/`)** — submit form (MUI `TextField` URL + `Button`) +
+   history list. On `POST /api/summaries` response (`200` or `202`), navigate
+   to `/video/{id}` — both outcomes converge on the detail page, which renders
+   correctly from whatever `status` it first polls.
+3. **Detail page (`/video/:id`)** — polls `GET /api/summaries/{id}` (~1.5 s,
+   spec §6) and renders exactly one view per `status`:
+   - `new` / `fetching-transcript` / `summarizing` → full-page MUI
+     `CircularProgress` + stage label ("Queued…", "Fetching transcript…",
+     "Summarizing…"). Indeterminate — no percentage (spec §6).
+   - `processed` → `VideoPlayer` (task 4) + summary `Card` (title, summary)
+     shown together. Stop polling.
+   - `failed` → MUI `Alert` with `error`, no player, resubmit affordance.
+     Stop polling.
+4. **`VideoPlayer` component** — presentational, responsive 16:9 wrapper
+   around `<iframe src="https://www.youtube.com/embed/{videoId}">`. No player
+   library. Takes `videoId` as its only prop.
+5. **History list** — `GET /api/summaries`, newest first, as a MUI
+   `List`/`Card` grid; each entry links to `/video/{id}`.
 6. Surface API errors with MUI `Alert`/`Snackbar`: 400 (bad URL), 429 (rate
    limited), 503 (broker down), and the async `failed` state (no transcript /
    provider error).
 7. `web/Dockerfile` proxying to `api`; **uncomment `web`** in `docker-compose.yml`.
 
 **Acceptance:** `docker compose up` (all services) brings up the full app; a user
-pastes a link, watches it process, reads the summary, and sees it in history —
-with no summarization/parsing logic in the frontend.
+pastes a link on `/`, is taken to `/video/{id}`, watches it process, then sees
+the player and summary together, and can find it again from history — with no
+summarization/parsing logic in the frontend.
 
 ---
 

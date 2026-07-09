@@ -354,6 +354,22 @@ section 6), so the UI can render a progress indicator, not just a spinner. Poll
 until `status` is `processed` (summary present) or `failed` (`error` present).
 `404 Not Found` if the id is unknown.
 
+The response includes `videoId` (alongside `videoUrl`) so the client can embed
+the YouTube player (section 6, "Progress delivery") without re-deriving it
+from the URL:
+
+```json
+{
+  "id": "665f1c...",
+  "videoUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "videoId": "dQw4w9WgXcQ",
+  "status": "processed",
+  "title": "Example video",
+  "summary": "Short LLM-generated summary text...",
+  "createdAt": "2026-07-07T12:00:00Z"
+}
+```
+
 ---
 
 ## 6. Data model (proposed)
@@ -454,6 +470,14 @@ React (browser)                      api                         rabbitmq / tran
 - Progress is **stage-based, not a percentage** — LLM completion isn't
   measurable without token streaming, which is out of scope. An indeterminate
   bar/spinner plus the current stage label is the target UX.
+- **Dedicated detail page.** Submitting a URL navigates the client to
+  `/video/{id}` (same route reached by clicking a history entry), which owns
+  the polling above. It renders exactly one view per `status`: a full-page
+  spinner + stage label while in-flight; on `processed`, a YouTube player
+  (`<iframe>` embed built from `videoId`, section 5) shown together with the
+  summary; on `failed`, an error alert with no player. See
+  `docs/superpowers/specs/2026-07-09-video-detail-page-design.md` for the
+  full design.
 - **SSE is a later upgrade**, not a rewrite: `api` could expose
   `GET /api/summaries/{id}/events` (`text/event-stream`) and push each status
   change, reading the same `status` field. Deferred (section 12).
