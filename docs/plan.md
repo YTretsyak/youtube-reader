@@ -99,7 +99,9 @@ reachable Mongo + RabbitMQ, so every later phase has somewhere to land.
    - Enforce the dependency rule: `Domain`/`Application` reference **no**
      YoutubeExplode, LLM SDK, MongoDB, or RabbitMQ client packages.
 2. Test projects: `tests/Domain.Tests`, `tests/Application.Tests`,
-   `tests/Infrastructure.Tests`, `tests/TranscriptService.Tests` (xUnit).
+   `tests/Infrastructure.Tests`, `tests/TranscriptService.Tests` (xUnit). All
+   unit tests for now — no real Mongo/RabbitMQ/GitHub Models in the suite
+   (see `CLAUDE.md`).
 3. **Host LLM model in GitHub (setup half):** create a GitHub fine-grained PAT
    with `Models: read-only` (spec §7); fill `LLM_API_KEY` in a git-ignored
    `.env`; smoke-test with the bash/PowerShell snippet in spec §7 before any
@@ -174,16 +176,20 @@ idempotency — all against in-memory fakes, no real I/O or broker.
 **Branch:** `feature/infrastructure-adapters` (adapters are independent; may split
 per adapter).
 
-**Goal:** implement the boundary interfaces against real services. Covers the
-**DB service**, the **LLM-in-GitHub** adapter, and the **RabbitMQ** plumbing the
-transcript service and api both build on.
+**Goal:** implement the boundary interfaces against real services, verified with
+**unit tests against mocks/fakes only** — no live Mongo/RabbitMQ/GitHub Models in
+the test suite for now (see `CLAUDE.md`). Covers the **DB service**, the
+**LLM-in-GitHub** adapter, and the **RabbitMQ** plumbing the transcript service
+and api both build on.
 
 ### 3a — DB service: `MongoSummaryRepository : ISummaryRepository`
 1. Map the §6 document; configure the client per the `mongodb-connection` skill.
 2. **Unique index on `videoId`** so concurrent submits can't create duplicates
    (FR5/FR8) — the DB enforces dedupe, not just app code.
 3. create / get-by-id / get-by-videoId / list-newest / status-update.
-4. Integration-test against the `mongo` compose service.
+4. Unit-test the mapping/query logic against a mocked driver; the unique-index
+   constraint itself is not verified by an automated test for now (Mongo can't
+   enforce it without a real database).
 
 ### 3b — LLM in GitHub: `OpenAiCompatibleSummarizer : ISummarizer`
 1. `HttpClient`-based (via `IHttpClientFactory`), configured only by
@@ -191,7 +197,8 @@ transcript service and api both build on.
 2. POST `/chat/completions`, `messages:[{system},{user}]`, read
    `choices[0].message.content` (spec §7).
 3. Map provider failure / `429` to a `failed` outcome, not a throw.
-4. Integration-test against real GitHub Models (PAT from P0).
+4. Unit-test against a mocked `HttpMessageHandler` (success, `429`, malformed
+   response) — no live call to GitHub Models in the test suite.
 
 ### 3c — RabbitMQ: `RabbitMqTranscriptRequestPublisher` + consumer plumbing
 1. `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher` — publishes
@@ -202,15 +209,17 @@ transcript service and api both build on.
    the result** (`consume → handle → publish → ack`), `BasicQos` prefetch = 1,
    retry cap + **dead-letter queue** for poison messages, `nack(requeue:false)`
    past the cap. Connection via `RABBITMQ_URI`.
-3. Integration-test publish→consume round-trip against the `rabbitmq` service,
-   including: an unacked message is redelivered after the consumer drops, and a
-   poison message dead-letters after the cap instead of looping.
+3. Unit-test the ack/nack/retry-cap decision logic in isolation (mocked channel).
+   Redelivery and dead-lettering are real-broker behaviors — not covered by an
+   automated test for now; verify manually via `docker compose up rabbitmq` if
+   needed before P4/P5 depend on this plumbing.
 
-**Acceptance:** each adapter's integration test passes against its real
-dependency; unique `videoId` index verified; LLM-`429` → `failed`; a message
-published on one connection is consumed on another; a consumer that dies before
-acking causes redelivery (no lost message); a poison message dead-letters after
-the retry cap instead of looping.
+**Acceptance:** each adapter's unit tests pass against mocks/fakes; LLM-`429` →
+`failed` (unit-tested); ack-after-publish and retry-cap decision logic
+unit-tested. Real-service behaviors (unique-index enforcement, cross-connection
+publish→consume, redelivery-on-crash, dead-lettering) are **not** covered by
+automated tests in this phase — deferred until integration tests are
+reintroduced.
 
 **Resolves open question:** "transcript persistence" — store **only the summary**
 on the document (spec §6). Whether `TranscriptReady` carries the full transcript
@@ -248,12 +257,14 @@ architecture change.
 7. `src/TranscriptService/Dockerfile`; **uncomment `transcript-service`** in
    `docker-compose.yml`.
 
-**Acceptance:** `docker compose up rabbitmq transcript-service` consumes a
-`TranscriptRequested` and publishes the correct result for both a captioned and a
-no-caption video; **killing a worker mid-fetch redelivers the request and the
-video still completes** (no lost message); `--scale transcript-service=3` spreads
-requests across replicas (competing consumers); a caption-less video acks (no
-loop); a poison message dead-letters after the cap.
+**Acceptance:** `YoutubeExplodeTranscriptFetcher` and the ack/publish sequencing
+are unit-tested against mocks (captioned, no-caption, transient-error cases). The
+following are **manual smoke checks** via `docker compose up rabbitmq
+transcript-service`, not automated tests, and can be done ad hoc rather than
+gating the merge: a `TranscriptRequested` produces the correct result for both a
+captioned and a no-caption video; killing a worker mid-fetch redelivers the
+request and the video still completes; `--scale transcript-service=3` spreads
+requests across replicas; a poison message dead-letters after the cap.
 
 ---
 
@@ -313,38 +324,47 @@ lost message).
 
 **Goal:** the React (TypeScript) client — a **thin** client over the API, no
 duplicated business logic (spec §3), built with **Material UI (MUI)**. Completes
-`docker compose up`.
+`docker compose up`. Design:
+`docs/superpowers/specs/2026-07-09-video-detail-page-design.md`.
 
 **Tasks:**
 
-1. Scaffold `web/` (React + TypeScript) and add MUI:
+1. Scaffold `web/` (React + TypeScript) and add MUI + router:
    ```
-   npm install @mui/material @emotion/react @emotion/styled
+   npm install @mui/material @emotion/react @emotion/styled react-router-dom
    ```
    `@mui/material` is the component library; `@emotion/react` + `@emotion/styled`
-   are its default styling engine (peer deps). Wrap the app in a MUI
-   `ThemeProvider` + `CssBaseline`. Optional later: `@mui/icons-material` for
-   icons. MUI is presentation only — no business logic (spec §3).
-2. **Submit form** — MUI `TextField` (URL) + `Button`; `POST /api/summaries`; on
-   `202`, capture the `id` and start polling. Handle the `200` cache-hit path
-   (already `processed`) by rendering the summary immediately, no polling.
-3. **Progress view** — **poll** `GET /api/summaries/{id}` (~1.5 s) and map
-   `status` to a stage label: `new`→"Queued…", `fetching-transcript`→"Fetching
-   transcript…", `summarizing`→"Summarizing…". Render with a MUI
-   `LinearProgress`/`CircularProgress` (indeterminate — no percentage, spec §6).
-   Stop polling on `processed`/`failed`.
-4. **Summary view** — on `processed`, render summary + title in a MUI `Card`; on
-   `failed`, show `error` in an `Alert`.
-5. **History list** — `GET /api/summaries`, newest first, click-through, as a MUI
-   `List`/`Card` grid.
+   are its default styling engine (peer deps). `react-router-dom` backs the
+   `/` and `/video/:id` routes (task 3). Wrap the app in a MUI `ThemeProvider` +
+   `CssBaseline`. Optional later: `@mui/icons-material` for icons. MUI is
+   presentation only — no business logic (spec §3).
+2. **Main page (`/`)** — submit form (MUI `TextField` URL + `Button`) +
+   history list. On `POST /api/summaries` response (`200` or `202`), navigate
+   to `/video/{id}` — both outcomes converge on the detail page, which renders
+   correctly from whatever `status` it first polls.
+3. **Detail page (`/video/:id`)** — polls `GET /api/summaries/{id}` (~1.5 s,
+   spec §6) and renders exactly one view per `status`:
+   - `new` / `fetching-transcript` / `summarizing` → full-page MUI
+     `CircularProgress` + stage label ("Queued…", "Fetching transcript…",
+     "Summarizing…"). Indeterminate — no percentage (spec §6).
+   - `processed` → `VideoPlayer` (task 4) + summary `Card` (title, summary)
+     shown together. Stop polling.
+   - `failed` → MUI `Alert` with `error`, no player, resubmit affordance.
+     Stop polling.
+4. **`VideoPlayer` component** — presentational, responsive 16:9 wrapper
+   around `<iframe src="https://www.youtube.com/embed/{videoId}">`. No player
+   library. Takes `videoId` as its only prop.
+5. **History list** — `GET /api/summaries`, newest first, as a MUI
+   `List`/`Card` grid; each entry links to `/video/{id}`.
 6. Surface API errors with MUI `Alert`/`Snackbar`: 400 (bad URL), 429 (rate
    limited), 503 (broker down), and the async `failed` state (no transcript /
    provider error).
 7. `web/Dockerfile` proxying to `api`; **uncomment `web`** in `docker-compose.yml`.
 
 **Acceptance:** `docker compose up` (all services) brings up the full app; a user
-pastes a link, watches it process, reads the summary, and sees it in history —
-with no summarization/parsing logic in the frontend.
+pastes a link on `/`, is taken to `/video/{id}`, watches it process, then sees
+the player and summary together, and can find it again from history — with no
+summarization/parsing logic in the frontend.
 
 ---
 

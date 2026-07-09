@@ -32,3 +32,5 @@ Full description of the change, including any relevant context or reasoning behi
    "Short description of the change made.
 
    Full description of the change, including any relevant context or reasoning behind the changes."
+
+7. If you don't understand the template for commit message, analize prevoius commit messages in the repo and follow the same pattern.
