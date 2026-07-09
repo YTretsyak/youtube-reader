@@ -8,7 +8,7 @@ acceptance criteria are checked.
 
 | Phase | Branch | Status |
 | --- | --- | --- |
-| P0 — Project setup & prerequisites | `feature/solution-scaffold` | [ ] Not started |
+| P0 — Project setup & prerequisites | `feature/solution-scaffold` | [x] Complete |
 | P1 — Domain (M1) | `feature/domain-model` | [ ] Not started |
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [ ] Not started |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [ ] Not started |
@@ -31,13 +31,13 @@ acceptance criteria are checked.
       suite
 - [x] GitHub Models PAT created, `.env` filled, smoke test verified against
       `openai/gpt-4o-mini`
-- [ ] `docker compose up mongo rabbitmq` confirmed reachable (Mongo `27017`,
+- [x] `docker compose up mongo rabbitmq` confirmed reachable (Mongo `27017`,
       RabbitMQ `5672`/`15672`)
 
 **Acceptance:**
 - [x] `dotnet build` + `dotnet test` run green (empty)
 - [x] LLM smoke test returns a completion
-- [ ] Mongo and RabbitMQ reachable
+- [x] Mongo and RabbitMQ reachable
 
 ---
 
