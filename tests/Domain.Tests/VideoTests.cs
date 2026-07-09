@@ -45,6 +45,47 @@ public class VideoTests
     }
 
     [Fact]
+    public void Restore_ProcessedStatus_ReconstructsAllFields()
+    {
+        var url = SampleUrl();
+        var summary = new Summary("a short summary", "github-models", "openai/gpt-4o-mini");
+
+        var video = Video.Restore(url.VideoId, url, VideoStatus.Processed, "Example video", summary, null);
+
+        Assert.Equal(url.VideoId, video.Id);
+        Assert.Same(url, video.Url);
+        Assert.Equal(VideoStatus.Processed, video.Status);
+        Assert.Equal("Example video", video.Title);
+        Assert.Same(summary, video.Summary);
+        Assert.Null(video.Error);
+    }
+
+    [Fact]
+    public void Restore_FailedStatus_ReconstructsErrorWithoutTitleOrSummary()
+    {
+        var url = SampleUrl();
+
+        var video = Video.Restore(url.VideoId, url, VideoStatus.Failed, null, null, "no transcript available");
+
+        Assert.Equal(VideoStatus.Failed, video.Status);
+        Assert.Null(video.Title);
+        Assert.Null(video.Summary);
+        Assert.Equal("no transcript available", video.Error);
+    }
+
+    [Fact]
+    public void Restore_ThenMarkFailed_FollowsNormalStatusMachine()
+    {
+        var url = SampleUrl();
+
+        var video = Video.Restore(url.VideoId, url, VideoStatus.FetchingTranscript, null, null, null);
+        video.MarkFailed("no transcript available");
+
+        Assert.Equal(VideoStatus.Failed, video.Status);
+        Assert.Equal("no transcript available", video.Error);
+    }
+
+    [Fact]
     public void MarkFailed_FromFetchingTranscript_SetsFailedAndError()
     {
         var video = NewVideo();

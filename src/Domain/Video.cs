@@ -9,14 +9,22 @@ public sealed class Video
     public Summary? Summary { get; private set; }
     public string? Error { get; private set; }
 
-    private Video(VideoId id, VideoUrl url)
+    private Video(VideoId id, VideoUrl url, VideoStatus status, string? title, Summary? summary, string? error)
     {
         Id = id;
         Url = url;
-        Status = VideoStatus.New;
+        Status = status;
+        Title = title;
+        Summary = summary;
+        Error = error;
     }
 
-    public static Video Create(VideoId id, VideoUrl url) => new(id, url);
+    public static Video Create(VideoId id, VideoUrl url) => new(id, url, VideoStatus.New, null, null, null);
+
+    // Reconstructs a Video in an already-persisted status, bypassing the forward transition
+    // methods below — used only by repository mapping (Infrastructure.Persistence.MongoSummaryRepository).
+    public static Video Restore(VideoId id, VideoUrl url, VideoStatus status, string? title, Summary? summary, string? error) =>
+        new(id, url, status, title, summary, error);
 
     public void MarkFetchingTranscript()
     {
