@@ -22,7 +22,7 @@ acceptance criteria are checked.
 
 **Branch:** `feature/solution-scaffold`
 
-- [ ] .NET solution + projects created, dependencies pointing inward only
+- [x] .NET solution + projects created, dependencies pointing inward only
       (`Domain`, `Contracts`, `Application`, `Infrastructure`, `Api`,
       `TranscriptService`) — target framework **.NET 10**
 - [ ] Test projects scaffolded: `tests/Domain.Tests`, `tests/Application.Tests`,
