@@ -71,7 +71,7 @@ acceptance criteria are checked.
       `ISummaryRepository`
 - [x] `SummarizeVideo` (submit path) — dedupe, create-as-`new`, no re-publish
       in-flight, cached `processed`, re-queue `failed`
-- [ ] Transcript-result handler — `TranscriptReady` → `processed`,
+- [x] Transcript-result handler — `TranscriptReady` → `processed`,
       `TranscriptUnavailable` → `failed`, idempotent on redelivery
 - [ ] `GetSummaryHistory` — newest-first list
 
