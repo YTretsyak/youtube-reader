@@ -217,3 +217,7 @@ constraint changes.
 - [ ] Rate-limit thresholds — decide concrete numbers in P5
 - [ ] Stuck in-flight record timeout/reclaim — decide in P5
 - [ ] Auth / multi-user — none planned; history is global
+- [ ] P3 final review noted `InMemoryVideoDocumentStore`'s newest-first/stable-position
+      emulation never exercises the real `MongoVideoDocumentStore`'s
+      `SortByDescending(CreatedAt)` + `SetOnInsert(CreatedAt)` logic — when integration
+      tests are reintroduced, target that pair specifically against a real Mongo instance

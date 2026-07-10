@@ -256,6 +256,16 @@ architecture change.
    dead-lettered past the cap (reuse P3c plumbing).
 7. `src/TranscriptService/Dockerfile`; **uncomment `transcript-service`** in
    `docker-compose.yml`.
+8. **Carried forward from the P3 final review — resolve before wiring the real
+   consumer loop:** P3's `ManualAckPolicy`/`ManualAckDispatcher` (reused here) take
+   a `redeliveryCount` as input, but `RabbitMqTopology`'s queue is a plain durable
+   classic queue with no `x-delivery-count` and no dead-letter-exchange
+   arguments — nothing in P3 actually supplies a truthful count. Decide here
+   (quorum queue with `x-delivery-count`, or DLX-based counting via `x-death`)
+   and declare the matching queue arguments in the same task that wires the
+   `BasicConsumeAsync` loop, or a transient failure will requeue forever and
+   never reach the cap. `AckDecision.DeadLetter` also currently just drops the
+   message (`nack(requeue:false)` with no DLX declared) until this is resolved.
 
 **Acceptance:** `YoutubeExplodeTranscriptFetcher` and the ack/publish sequencing
 are unit-tested against mocks (captioned, no-caption, transient-error cases). The
