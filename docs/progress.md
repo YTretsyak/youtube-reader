@@ -126,6 +126,7 @@ behaviors below are deferred until integration tests are reintroduced.
 - [ ] `TranscriptService` worker (`BackgroundService`, Worker Service host)
       consumes `TranscriptRequested`
 - [x] `YoutubeExplodeTranscriptFetcher : ITranscriptFetcher — captioned/no-caption/transient-error unit-tested`
+- [x] YoutubeExplodeTranscriptFetcher — HttpClient reused via IHttpClientFactory
 - [ ] Empty manifest / no matching language → publish `TranscriptUnavailable`
       **and ack**
 - [ ] Success → publish `TranscriptReady`, then ack
