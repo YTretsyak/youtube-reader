@@ -11,7 +11,7 @@ acceptance criteria are checked.
 | P0 — Project setup & prerequisites | `feature/solution-scaffold` | [x] Complete |
 | P1 — Domain (M1) | `feature/domain-model` | [x] Complete |
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [x] Complete |
-| P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [ ] Not started |
+| P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [x] Complete |
 | P4 — Transcript service (M4) | `feature/transcript-service` | [ ] Not started |
 | P5 — API service (M5) | `feature/api-endpoints` | [ ] Not started |
 | P6 — UI (M6) | `feature/web-client` | [ ] Not started |
@@ -107,15 +107,15 @@ behaviors below are deferred until integration tests are reintroduced.
 ### 3c — RabbitMQ plumbing
 - [x] `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher`
       (durable queues, persistent messages)
-- [ ] Shared consumer host: manual-ack, `consume → handle → publish → ack`,
+- [x] Shared consumer host: manual-ack, `consume → handle → publish → ack`,
       `BasicQos` prefetch = 1, retry cap + dead-letter queue
-- [ ] Unit test ack/nack/retry-cap decision logic against a mocked channel
+- [x] Unit test ack/nack/retry-cap decision logic against a mocked channel
       (real redelivery/dead-lettering not covered — needs a real broker)
 
 **Acceptance:**
-- [ ] Each adapter's unit tests pass against mocks/fakes
-- [ ] LLM `429` → `failed` (unit-tested)
-- [ ] Ack-after-publish and retry-cap logic unit-tested
+- [x] Each adapter's unit tests pass against mocks/fakes
+- [x] LLM `429` → `failed` (unit-tested)
+- [x] Ack-after-publish and retry-cap logic unit-tested
 
 ---
 
