@@ -127,6 +127,8 @@ behaviors below are deferred until integration tests are reintroduced.
       consumes `TranscriptRequested`
 - [x] `YoutubeExplodeTranscriptFetcher : ITranscriptFetcher — captioned/no-caption/transient-error unit-tested`
 - [x] YoutubeExplodeTranscriptFetcher — HttpClient reused via IHttpClientFactory
+- [x] Requests queue: quorum type + dead-letter-exchange (resolves P3 carry-forward note)
+- [x] Results exchange/queue declared (transcript.ready / transcript.unavailable routing keys)
 - [ ] Empty manifest / no matching language → publish `TranscriptUnavailable`
       **and ack**
 - [ ] Success → publish `TranscriptReady`, then ack
