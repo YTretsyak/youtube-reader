@@ -44,4 +44,16 @@ public class YoutubeExplodeTranscriptFetcherTests
         Assert.Equal(TranscriptFetchOutcome.TransientError, result.Outcome);
         Assert.Equal("network error", result.Reason);
     }
+
+    [Fact]
+    public async Task FetchAsync_VideoClientThrowsVideoUnavailable_ReturnsUnavailable()
+    {
+        var videoClient = FakeYoutubeVideoClient.ThrowingException(new VideoUnavailableException("video is private or deleted"));
+        var fetcher = new YoutubeExplodeTranscriptFetcher(videoClient);
+
+        var result = await fetcher.FetchAsync("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+
+        Assert.Equal(TranscriptFetchOutcome.Unavailable, result.Outcome);
+        Assert.Equal("video is private or deleted", result.Reason);
+    }
 }

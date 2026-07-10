@@ -149,6 +149,11 @@ transcript-service` before P5 depends on this plumbing):**
 - [ ] `--scale transcript-service=3` spreads requests across replicas
 - [ ] A poison message dead-letters after the cap (inspect the `transcript.requests.dead-letter`
       queue via the RabbitMQ management UI)
+- [ ] If `transcript.requests` was declared as a classic queue by an earlier `docker compose up
+      rabbitmq` run, `docker compose down -v` (or manually delete the queue) before first
+      starting `transcript-service` — the queue is now quorum-typed with new arguments, and
+      RabbitMQ rejects redeclaring an existing queue with different arguments
+      (`PRECONDITION_FAILED`)
 
 ---
 

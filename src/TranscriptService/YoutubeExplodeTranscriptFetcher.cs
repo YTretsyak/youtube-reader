@@ -19,6 +19,10 @@ public sealed class YoutubeExplodeTranscriptFetcher : ITranscriptFetcher
                 ? TranscriptFetchResult.Unavailable("no transcript available")
                 : TranscriptFetchResult.Success(result.Title, result.TranscriptText);
         }
+        catch (VideoUnavailableException ex)
+        {
+            return TranscriptFetchResult.Unavailable(ex.Message);
+        }
         catch (Exception ex)
         {
             return TranscriptFetchResult.TransientError(ex.Message);
