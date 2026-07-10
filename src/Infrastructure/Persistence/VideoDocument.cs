@@ -1,5 +1,8 @@
+using MongoDB.Bson.Serialization.Attributes;
+
 namespace Infrastructure.Persistence;
 
+[BsonIgnoreExtraElements]
 public sealed class VideoDocument
 {
     public string VideoId { get; set; } = default!;
