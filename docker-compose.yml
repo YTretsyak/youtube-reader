@@ -21,17 +21,17 @@ services:
     volumes:
       - rabbitmq-data:/var/lib/rabbitmq
 
-  # transcript-service:
-  #   build:
-  #     context: .
-  #     dockerfile: src/TranscriptService/Dockerfile
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - rabbitmq
-  #   environment:
-  #     RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
-  #   # scale the fragile fetch layer under load:
-  #   # docker compose up --scale transcript-service=3
+  transcript-service:
+    build:
+      context: .
+      dockerfile: src/TranscriptService/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - rabbitmq
+    environment:
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
+    # scale the fragile fetch layer under load:
+    # docker compose up --scale transcript-service=3
 
   # api:
   #   build:

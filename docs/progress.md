@@ -12,7 +12,7 @@ acceptance criteria are checked.
 | P1 — Domain (M1) | `feature/domain-model` | [x] Complete |
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [x] Complete |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [x] Complete |
-| P4 — Transcript service (M4) | `feature/transcript-service` | [ ] Not started |
+| P4 — Transcript service (M4) | `feature/transcript-service` | [x] Complete |
 | P5 — API service (M5) | `feature/api-endpoints` | [ ] Not started |
 | P6 — UI (M6) | `feature/web-client` | [ ] Not started |
 
@@ -123,27 +123,32 @@ behaviors below are deferred until integration tests are reintroduced.
 
 **Branch:** `feature/transcript-service`
 
-- [ ] `TranscriptService` worker (`BackgroundService`, Worker Service host)
+- [x] `TranscriptService` worker (`BackgroundService`, Worker Service host)
       consumes `TranscriptRequested`
 - [x] `YoutubeExplodeTranscriptFetcher : ITranscriptFetcher — captioned/no-caption/transient-error unit-tested`
 - [x] YoutubeExplodeTranscriptFetcher — HttpClient reused via IHttpClientFactory
 - [x] Requests queue: quorum type + dead-letter-exchange (resolves P3 carry-forward note)
 - [x] Results exchange/queue declared (transcript.ready / transcript.unavailable routing keys)
-- [ ] Empty manifest / no matching language → publish `TranscriptUnavailable`
+- [x] Empty manifest / no matching language → publish `TranscriptUnavailable`
       **and ack**
-- [ ] Success → publish `TranscriptReady`, then ack
-- [ ] Ack-after-publish ordering enforced (never ack first)
-- [ ] Idempotency on redelivered requests; poison messages dead-lettered
-- [ ] `src/TranscriptService/Dockerfile`; `transcript-service` uncommented in
+- [x] Success → publish `TranscriptReady`, then ack
+- [x] Ack-after-publish ordering enforced (never ack first)
+- [x] Idempotency on redelivered requests; poison messages dead-lettered
+- [x] `src/TranscriptService/Dockerfile`; `transcript-service` uncommented in
       `docker-compose.yml`
 
 **Acceptance:**
 - [x] `YoutubeExplodeTranscriptFetcher` + ack/publish sequencing unit-tested
       against mocks (captioned, no-caption, transient-error cases)
-- [ ] Manual smoke checks only (not gating, not automated): captioned/no-caption
-      videos produce correct results; killing a worker mid-fetch redelivers the
-      request; `--scale transcript-service=3` spreads requests across replicas;
-      a poison message dead-letters after the cap
+
+**Manual smoke checks (not gating this merge — do ad hoc via `docker compose up rabbitmq
+transcript-service` before P5 depends on this plumbing):**
+- [ ] A `TranscriptRequested` produces the correct result for both a captioned and a
+      no-caption video
+- [ ] Killing a worker mid-fetch redelivers the request and the video still completes
+- [ ] `--scale transcript-service=3` spreads requests across replicas
+- [ ] A poison message dead-letters after the cap (inspect the `transcript.requests.dead-letter`
+      queue via the RabbitMQ management UI)
 
 ---
 
