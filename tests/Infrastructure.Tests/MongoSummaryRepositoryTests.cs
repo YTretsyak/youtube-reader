@@ -82,6 +82,19 @@ public class MongoSummaryRepositoryTests
     }
 
     [Fact]
+    public async Task SaveAsync_ThenGetByVideoIdAsync_RoundTripsCreatedAt()
+    {
+        var repository = new MongoSummaryRepository(new InMemoryVideoDocumentStore());
+        var url = SampleUrl();
+        var video = Video.Create(url.VideoId, url);
+
+        await repository.SaveAsync(video);
+        var loaded = await repository.GetByVideoIdAsync(url.VideoId);
+
+        Assert.Equal(video.CreatedAt, loaded!.CreatedAt);
+    }
+
+    [Fact]
     public async Task GetHistoryAsync_ReturnsNewestFirst()
     {
         var repository = new MongoSummaryRepository(new InMemoryVideoDocumentStore());

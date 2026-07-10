@@ -36,7 +36,8 @@ public sealed class MongoSummaryRepository : ISummaryRepository
         SummaryText = video.Summary?.Text,
         Provider = video.Summary?.Provider,
         Model = video.Summary?.Model,
-        Error = video.Error
+        Error = video.Error,
+        CreatedAt = video.CreatedAt.UtcDateTime
     };
 
     private static Video ToDomain(VideoDocument document)
@@ -47,6 +48,7 @@ public sealed class MongoSummaryRepository : ISummaryRepository
             ? null
             : new Summary(document.SummaryText, document.Provider!, document.Model!);
 
-        return Video.Restore(new VideoId(document.VideoId), url!, status, document.Title, summary, document.Error);
+        return Video.Restore(new VideoId(document.VideoId), url!, status, document.Title, summary, document.Error,
+            new DateTimeOffset(document.CreatedAt, TimeSpan.Zero));
     }
 }
