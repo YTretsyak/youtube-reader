@@ -138,7 +138,7 @@ behaviors below are deferred until integration tests are reintroduced.
       `docker-compose.yml`
 
 **Acceptance:**
-- [ ] `YoutubeExplodeTranscriptFetcher` + ack/publish sequencing unit-tested
+- [x] `YoutubeExplodeTranscriptFetcher` + ack/publish sequencing unit-tested
       against mocks (captioned, no-caption, transient-error cases)
 - [ ] Manual smoke checks only (not gating, not automated): captioned/no-caption
       videos produce correct results; killing a worker mid-fetch redelivers the
