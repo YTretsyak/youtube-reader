@@ -105,7 +105,7 @@ behaviors below are deferred until integration tests are reintroduced.
 - [x] Unit test against a mocked `HttpMessageHandler` (success/429/malformed)
 
 ### 3c — RabbitMQ plumbing
-- [ ] `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher`
+- [x] `RabbitMqTranscriptRequestPublisher : ITranscriptRequestPublisher`
       (durable queues, persistent messages)
 - [ ] Shared consumer host: manual-ack, `consume → handle → publish → ack`,
       `BasicQos` prefetch = 1, retry cap + dead-letter queue
