@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+    <!-- Pin transitive Microsoft.OpenApi past 2.0.0's stack-overflow-on-circular-schema
+         advisory (GHSA-v5pm-xwqc-g5wc, CVE-2026-49451) — patched in 2.7.5+. -->
+    <PackageReference Include="Microsoft.OpenApi" Version="2.10.0" />
   </ItemGroup>
 
 
