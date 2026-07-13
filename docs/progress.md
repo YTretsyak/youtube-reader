@@ -166,7 +166,7 @@ transcript-service` before P5 depends on this plumbing):**
 - [x] `GET /api/summaries/{id}` — single record + status; 404
 - [x] Status stages written by `api` only (`new` → `fetching-transcript` →
       … ), never by `transcript-service`
-- [ ] Transcript-result consumer (`BackgroundService`) — separate from
+- [x] Transcript-result consumer (`BackgroundService`) — separate from
       request handling, correlates by `videoId`, idempotent no-op on
       already-`processed`/`failed`
 - [x] Request validation at the boundary (FR7): missing/empty `url`,

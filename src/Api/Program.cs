@@ -1,4 +1,5 @@
 using Api.Endpoints;
+using Api.Messaging;
 using Application;
 using Domain;
 using Infrastructure.Llm;
@@ -57,6 +58,11 @@ if (!builder.Environment.IsEnvironment("Testing"))
     builder.Services.AddSingleton(rabbitChannel);
     builder.Services.AddSingleton<ITranscriptRequestPublisher>(sp =>
         new RabbitMqTranscriptRequestPublisher(sp.GetRequiredService<IChannel>()));
+
+    var maxRedeliveries = builder.Configuration.GetValue("TranscriptResults:MaxRedeliveries", 5);
+    builder.Services.AddSingleton(new ManualAckPolicy(maxRedeliveries));
+    builder.Services.AddSingleton<TranscriptResultHandler>();
+    builder.Services.AddHostedService<TranscriptResultsConsumer>();
 }
 
 var app = builder.Build();
