@@ -14,6 +14,29 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddHealthChecks();
 
+builder.WebHost.ConfigureKestrel(options => options.Limits.MaxRequestBodySize = 4096);
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("summaries", context => System.Threading.RateLimiting.RateLimitPartition.GetFixedWindowLimiter(
+        partitionKey: context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+        factory: _ => new System.Threading.RateLimiting.FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 30,
+            Window = TimeSpan.FromSeconds(60),
+            QueueLimit = 0
+        }));
+});
+
+builder.Services.AddRequestTimeouts(options =>
+{
+    options.DefaultPolicy = new Microsoft.AspNetCore.Http.Timeouts.RequestTimeoutPolicy
+    {
+        Timeout = TimeSpan.FromSeconds(10)
+    };
+});
+
 builder.Services.AddSingleton<IMongoClient>(_ =>
 {
     var connectionString = builder.Configuration["MONGO_CONNECTION_STRING"] ?? "mongodb://localhost:27017";
@@ -66,6 +89,9 @@ if (!builder.Environment.IsEnvironment("Testing"))
 }
 
 var app = builder.Build();
+
+app.UseRateLimiter();
+app.UseRequestTimeouts();
 
 if (!app.Environment.IsEnvironment("Testing"))
 {

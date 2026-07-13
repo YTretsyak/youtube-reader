@@ -7,9 +7,9 @@ namespace Api.Endpoints;
 
 public static class SummariesEndpoints
 {
-    public static void MapSummariesEndpoints(this IEndpointRouteBuilder app)
+    public static RouteGroupBuilder MapSummariesEndpoints(this IEndpointRouteBuilder app)
     {
-        var group = app.MapGroup("/api/summaries").WithTags("Summaries");
+        var group = app.MapGroup("/api/summaries").WithTags("Summaries").RequireRateLimiting("summaries");
 
         group.MapPost("/", PostSummaryAsync)
             .WithName("SubmitSummary")
@@ -29,6 +29,8 @@ public static class SummariesEndpoints
             .WithSummary("Get a single video's record and current processing status.")
             .Produces<SummaryResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
+
+        return group;
     }
 
     private static async Task<IResult> GetHistoryAsync(GetSummaryHistory getSummaryHistory, CancellationToken cancellationToken)

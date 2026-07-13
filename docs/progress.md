@@ -161,7 +161,7 @@ transcript-service` before P5 depends on this plumbing):**
 
 **Branch:** `feature/api-endpoints`
 
-- [ ] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503 (429 pending Task 7)
+- [x] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503
 - [x] `GET /api/summaries` — history, newest first
 - [x] `GET /api/summaries/{id}` — single record + status; 404
 - [x] Status stages written by `api` only (`new` → `fetching-transcript` →
@@ -171,11 +171,12 @@ transcript-service` before P5 depends on this plumbing):**
       already-`processed`/`failed`
 - [x] Request validation at the boundary (FR7): missing/empty `url`,
       non-YouTube URL, wrong content-type, oversized body → 400
-- [ ] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
+- [x] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
 - [x] Composition root: DI wiring, config from env, health check
 - [ ] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
-- [ ] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
-      timeout/reclaim threshold
+- [x] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
+      timeout/reclaim threshold (30 req/60s per IP; 4 KB body cap; stuck-record
+      reclaim decided as 10 min but not implemented — no scheduled job, deferred)
 
 **Acceptance:**
 - [ ] `docker compose up mongo rabbitmq transcript-service api` runs full
@@ -226,8 +227,9 @@ constraint changes.
       transcript inline
 - [ ] Production LLM provider / Azure AI Foundry — interim: GitHub Models
 - [ ] Messaging reliability — retry policy, DLQ, topology (resolved in P3c/P4)
-- [ ] Rate-limit thresholds — decide concrete numbers in P5
-- [ ] Stuck in-flight record timeout/reclaim — decide in P5
+- [x] Rate-limit thresholds — 30 requests / 60s per IP, fixed window, no queueing (P5)
+- [ ] Stuck in-flight record timeout/reclaim — decided as 10 min threshold (P5); no
+      reclaim job implemented yet, deferred to a future phase
 - [ ] Auth / multi-user — none planned; history is global
 - [ ] P3 final review noted `InMemoryVideoDocumentStore`'s newest-first/stable-position
       emulation never exercises the real `MongoVideoDocumentStore`'s
