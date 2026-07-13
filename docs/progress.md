@@ -161,10 +161,10 @@ transcript-service` before P5 depends on this plumbing):**
 
 **Branch:** `feature/api-endpoints`
 
-- [ ] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503 (429 pending Task 7)
-- [ ] `GET /api/summaries` — history, newest first
-- [ ] `GET /api/summaries/{id}` — single record + status; 404
-- [ ] Status stages written by `api` only (`new` → `fetching-transcript` →
+- [x] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503 (429 pending Task 7)
+- [x] `GET /api/summaries` — history, newest first
+- [x] `GET /api/summaries/{id}` — single record + status; 404
+- [x] Status stages written by `api` only (`new` → `fetching-transcript` →
       … ), never by `transcript-service`
 - [ ] Transcript-result consumer (`BackgroundService`) — separate from
       request handling, correlates by `videoId`, idempotent no-op on

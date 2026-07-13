@@ -18,6 +18,29 @@ public static class SummariesEndpoints
             .Produces<SummaryResponse>(StatusCodes.Status202Accepted)
             .Produces(StatusCodes.Status400BadRequest)
             .Produces(StatusCodes.Status503ServiceUnavailable);
+
+        group.MapGet("/", GetHistoryAsync)
+            .WithName("GetSummaryHistory")
+            .WithSummary("List previously submitted videos, newest first.")
+            .Produces<IReadOnlyList<SummaryResponse>>(StatusCodes.Status200OK);
+
+        group.MapGet("/{id}", GetSummaryByIdAsync)
+            .WithName("GetSummaryById")
+            .WithSummary("Get a single video's record and current processing status.")
+            .Produces<SummaryResponse>(StatusCodes.Status200OK)
+            .Produces(StatusCodes.Status404NotFound);
+    }
+
+    private static async Task<IResult> GetHistoryAsync(GetSummaryHistory getSummaryHistory, CancellationToken cancellationToken)
+    {
+        var history = await getSummaryHistory.ExecuteAsync(cancellationToken);
+        return Results.Ok(history.Select(SummaryResponse.From).ToList());
+    }
+
+    private static async Task<IResult> GetSummaryByIdAsync(string id, ISummaryRepository repository, CancellationToken cancellationToken)
+    {
+        var video = await repository.GetByVideoIdAsync(new VideoId(id), cancellationToken);
+        return video is null ? Results.NotFound() : Results.Ok(SummaryResponse.From(video));
     }
 
     private static async Task<IResult> PostSummaryAsync(
