@@ -161,7 +161,7 @@ transcript-service` before P5 depends on this plumbing):**
 
 **Branch:** `feature/api-endpoints`
 
-- [x] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503 (429 pending Task 7)
+- [ ] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503 (429 pending Task 7)
 - [x] `GET /api/summaries` — history, newest first
 - [x] `GET /api/summaries/{id}` — single record + status; 404
 - [x] Status stages written by `api` only (`new` → `fetching-transcript` →
@@ -172,7 +172,7 @@ transcript-service` before P5 depends on this plumbing):**
 - [x] Request validation at the boundary (FR7): missing/empty `url`,
       non-YouTube URL, wrong content-type, oversized body → 400
 - [ ] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
-- [ ] Composition root: DI wiring, config from env, health check
+- [x] Composition root: DI wiring, config from env, health check
 - [ ] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
 - [ ] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
       timeout/reclaim threshold
