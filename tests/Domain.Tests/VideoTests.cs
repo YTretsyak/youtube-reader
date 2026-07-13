@@ -50,7 +50,7 @@ public class VideoTests
         var url = SampleUrl();
         var summary = new Summary("a short summary", "github-models", "openai/gpt-4o-mini");
 
-        var video = Video.Restore(url.VideoId, url, VideoStatus.Processed, "Example video", summary, null);
+        var video = Video.Restore(url.VideoId, url, VideoStatus.Processed, "Example video", summary, null, DateTimeOffset.UtcNow);
 
         Assert.Equal(url.VideoId, video.Id);
         Assert.Same(url, video.Url);
@@ -65,7 +65,7 @@ public class VideoTests
     {
         var url = SampleUrl();
 
-        var video = Video.Restore(url.VideoId, url, VideoStatus.Failed, null, null, "no transcript available");
+        var video = Video.Restore(url.VideoId, url, VideoStatus.Failed, null, null, "no transcript available", DateTimeOffset.UtcNow);
 
         Assert.Equal(VideoStatus.Failed, video.Status);
         Assert.Null(video.Title);
@@ -78,7 +78,7 @@ public class VideoTests
     {
         var url = SampleUrl();
 
-        var video = Video.Restore(url.VideoId, url, VideoStatus.FetchingTranscript, null, null, null);
+        var video = Video.Restore(url.VideoId, url, VideoStatus.FetchingTranscript, null, null, null, DateTimeOffset.UtcNow);
         video.MarkFailed("no transcript available");
 
         Assert.Equal(VideoStatus.Failed, video.Status);
@@ -181,6 +181,27 @@ public class VideoTests
         var video = ToStatus(startStatus);
 
         Assert.Throws<InvalidOperationException>(video.Resubmit);
+    }
+
+    [Fact]
+    public void Create_SetsCreatedAtToNow()
+    {
+        var before = DateTimeOffset.UtcNow;
+        var video = NewVideo();
+        var after = DateTimeOffset.UtcNow;
+
+        Assert.InRange(video.CreatedAt, before, after);
+    }
+
+    [Fact]
+    public void Restore_PreservesGivenCreatedAt()
+    {
+        var url = SampleUrl();
+        var createdAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero);
+
+        var video = Video.Restore(url.VideoId, url, VideoStatus.New, null, null, null, createdAt);
+
+        Assert.Equal(createdAt, video.CreatedAt);
     }
 
     private static Video ToStatus(VideoStatus status)

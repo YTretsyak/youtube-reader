@@ -1,7 +1,7 @@
 # One-command local stack. See docs/specification.md section 9.
 # `mongo` and `rabbitmq` run today (back integration tests and local `dotnet run`).
-# Uncomment `transcript-service` at M4, `api` at M5, and `web` at M6, once their
-# Dockerfiles exist, to make `docker compose up` bring up the whole app.
+# Uncomment `web` at M6, once its Dockerfile exists, to make `docker compose up`
+# bring up the whole app.
 
 services:
   mongo:
@@ -33,22 +33,22 @@ services:
     # scale the fragile fetch layer under load:
     # docker compose up --scale transcript-service=3
 
-  # api:
-  #   build:
-  #     context: .
-  #     dockerfile: src/Api/Dockerfile
-  #   restart: unless-stopped
-  #   depends_on:
-  #     - mongo
-  #     - rabbitmq
-  #   ports:
-  #     - "8080:8080"
-  #   environment:
-  #     MONGO_CONNECTION_STRING: mongodb://mongo:27017
-  #     RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
-  #     LLM_BASE_URL: ${LLM_BASE_URL}
-  #     LLM_API_KEY: ${LLM_API_KEY}
-  #     LLM_MODEL: ${LLM_MODEL}
+  api:
+    build:
+      context: .
+      dockerfile: src/Api/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - mongo
+      - rabbitmq
+    ports:
+      - "8080:8080"
+    environment:
+      MONGO_CONNECTION_STRING: mongodb://mongo:27017
+      RABBITMQ_URI: amqp://guest:guest@rabbitmq:5672
+      LLM_BASE_URL: ${LLM_BASE_URL}
+      LLM_API_KEY: ${LLM_API_KEY}
+      LLM_MODEL: ${LLM_MODEL}
 
   # web:
   #   build:

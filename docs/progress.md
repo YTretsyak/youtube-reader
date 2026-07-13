@@ -13,7 +13,7 @@ acceptance criteria are checked.
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [x] Complete |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [x] Complete |
 | P4 — Transcript service (M4) | `feature/transcript-service` | [x] Complete |
-| P5 — API service (M5) | `feature/api-endpoints` | [ ] Not started |
+| P5 — API service (M5) | `feature/api-endpoints` | [x] Complete |
 | P6 — UI (M6) | `feature/web-client` | [ ] Not started |
 
 ---
@@ -161,21 +161,24 @@ transcript-service` before P5 depends on this plumbing):**
 
 **Branch:** `feature/api-endpoints`
 
-- [ ] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503
-- [ ] `GET /api/summaries` — history, newest first
-- [ ] `GET /api/summaries/{id}` — single record + status; 404
-- [ ] Status stages written by `api` only (`new` → `fetching-transcript` →
+- [x] `POST /api/summaries` — 200 / 202 / 400 / 429 / 503
+- [x] `GET /api/summaries` — history, newest first
+- [x] `GET /api/summaries/{id}` — single record + status; 404
+- [x] Status stages written by `api` only (`new` → `fetching-transcript` →
       … ), never by `transcript-service`
-- [ ] Transcript-result consumer (`BackgroundService`) — separate from
+- [x] Transcript-result consumer (`BackgroundService`) — separate from
       request handling, correlates by `videoId`, idempotent no-op on
       already-`processed`/`failed`
-- [ ] Request validation at the boundary (FR7): missing/empty `url`,
-      non-YouTube URL, wrong content-type, oversized body → 400
-- [ ] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
-- [ ] Composition root: DI wiring, config from env, health check
-- [ ] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
-- [ ] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
-      timeout/reclaim threshold
+- [x] Request validation at the boundary (FR7): missing/empty `url`,
+      non-YouTube URL, wrong content-type → 400; oversized body rejected
+      (413, via Kestrel's `MaxRequestBodySize` — not the endpoint's own 400
+      path, since Kestrel rejects it before the request reaches the handler)
+- [x] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
+- [x] Composition root: DI wiring, config from env, health check
+- [x] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
+- [x] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
+      timeout/reclaim threshold (30 req/60s per IP; 4 KB body cap; stuck-record
+      reclaim decided as 10 min but not implemented — no scheduled job, deferred)
 
 **Acceptance:**
 - [ ] `docker compose up mongo rabbitmq transcript-service api` runs full
@@ -184,6 +187,14 @@ transcript-service` before P5 depends on this plumbing):**
       (observed via polling)
 - [ ] Cache hit returns 200 without re-processing
 - [ ] Malformed input → 400; over-limit → 429
+
+**Manual smoke checks (not gating this merge — do ad hoc via `docker compose up` before
+relying on this in Phase 6):**
+- [ ] A real YouTube URL submitted via `POST /api/summaries` reaches `processed` within a
+      minute or two, observed by polling `GET /api/summaries/{id}`
+- [ ] A second `POST` for the same URL while it's still in-flight returns `202` without a
+      second `TranscriptRequested` publish (check the RabbitMQ management UI message count)
+- [ ] A `POST` for an already-`processed` URL returns `200` immediately (cache hit)
 
 ---
 
@@ -226,8 +237,9 @@ constraint changes.
       transcript inline
 - [ ] Production LLM provider / Azure AI Foundry — interim: GitHub Models
 - [ ] Messaging reliability — retry policy, DLQ, topology (resolved in P3c/P4)
-- [ ] Rate-limit thresholds — decide concrete numbers in P5
-- [ ] Stuck in-flight record timeout/reclaim — decide in P5
+- [x] Rate-limit thresholds — 30 requests / 60s per IP, fixed window, no queueing (P5)
+- [ ] Stuck in-flight record timeout/reclaim — decided as 10 min threshold (P5); no
+      reclaim job implemented yet, deferred to a future phase
 - [ ] Auth / multi-user — none planned; history is global
 - [ ] P3 final review noted `InMemoryVideoDocumentStore`'s newest-first/stable-position
       emulation never exercises the real `MongoVideoDocumentStore`'s
