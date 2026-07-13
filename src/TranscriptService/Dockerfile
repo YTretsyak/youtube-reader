@@ -2,6 +2,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY youtube-reader.sln .
+COPY Directory.Build.props .
 COPY src/Domain/Domain.csproj src/Domain/
 COPY src/Contracts/Contracts.csproj src/Contracts/
 COPY src/Application/Application.csproj src/Application/
