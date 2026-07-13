@@ -170,7 +170,9 @@ transcript-service` before P5 depends on this plumbing):**
       request handling, correlates by `videoId`, idempotent no-op on
       already-`processed`/`failed`
 - [x] Request validation at the boundary (FR7): missing/empty `url`,
-      non-YouTube URL, wrong content-type, oversized body → 400
+      non-YouTube URL, wrong content-type → 400; oversized body rejected
+      (413, via Kestrel's `MaxRequestBodySize` — not the endpoint's own 400
+      path, since Kestrel rejects it before the request reaches the handler)
 - [x] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
 - [x] Composition root: DI wiring, config from env, health check
 - [x] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`

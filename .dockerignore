@@ -2,5 +2,6 @@
 **/obj/
 .git/
 .claude/
+.env
 docs/
 web/
