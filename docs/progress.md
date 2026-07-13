@@ -13,7 +13,7 @@ acceptance criteria are checked.
 | P2 — Application (M2) + messaging contracts | `feature/application-usecases` | [x] Complete |
 | P3 — Infrastructure (M3): DB, LLM, RabbitMQ | `feature/infrastructure-adapters` | [x] Complete |
 | P4 — Transcript service (M4) | `feature/transcript-service` | [x] Complete |
-| P5 — API service (M5) | `feature/api-endpoints` | [ ] Not started |
+| P5 — API service (M5) | `feature/api-endpoints` | [x] Complete |
 | P6 — UI (M6) | `feature/web-client` | [ ] Not started |
 
 ---
@@ -173,7 +173,7 @@ transcript-service` before P5 depends on this plumbing):**
       non-YouTube URL, wrong content-type, oversized body → 400
 - [x] Rate limiting (FR9): per-IP `AddRateLimiter`, max body size, timeouts
 - [x] Composition root: DI wiring, config from env, health check
-- [ ] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
+- [x] `src/Api/Dockerfile`; `api` uncommented in `docker-compose.yml`
 - [x] Decide: concrete rate-limit numbers, body-size cap, stuck-in-flight
       timeout/reclaim threshold (30 req/60s per IP; 4 KB body cap; stuck-record
       reclaim decided as 10 min but not implemented — no scheduled job, deferred)
@@ -185,6 +185,14 @@ transcript-service` before P5 depends on this plumbing):**
       (observed via polling)
 - [ ] Cache hit returns 200 without re-processing
 - [ ] Malformed input → 400; over-limit → 429
+
+**Manual smoke checks (not gating this merge — do ad hoc via `docker compose up` before
+relying on this in Phase 6):**
+- [ ] A real YouTube URL submitted via `POST /api/summaries` reaches `processed` within a
+      minute or two, observed by polling `GET /api/summaries/{id}`
+- [ ] A second `POST` for the same URL while it's still in-flight returns `202` without a
+      second `TranscriptRequested` publish (check the RabbitMQ management UI message count)
+- [ ] A `POST` for an already-`processed` URL returns `200` immediately (cache hit)
 
 ---
 
