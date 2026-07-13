@@ -1,3 +1,4 @@
+using Api.Endpoints;
 using Application;
 using Domain;
 using Infrastructure.Llm;
@@ -67,6 +68,7 @@ if (!app.Environment.IsEnvironment("Testing"))
 }
 
 app.MapHealthChecks("/health");
+app.MapSummariesEndpoints();
 
 if (app.Environment.IsDevelopment())
     app.MapOpenApi();
